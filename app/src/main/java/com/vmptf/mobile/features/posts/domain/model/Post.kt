@@ -1,13 +1,15 @@
 package com.vmptf.mobile.features.posts.domain.model
 
-import java.util.Date
+data class Category(
+    val id: Int,
+    val name: String
+)
 
 data class Post(
     val id: Int,
     val title: String,
-    val content: String?,     // Может быть null
-    val author: String?,      // Может быть null
-    val createdAt: Date,      // Gson умеет парсить даты по умолчанию (ISO 8601)
-    //val comments: List<Comment>,
-    //val categories: List<Category>
-)
+    val content: String?,
+    val author: String?,
+    val createdAt: String,      // String для сумісності з Gson
+    val categories: List<Category> = emptyList()
+)
