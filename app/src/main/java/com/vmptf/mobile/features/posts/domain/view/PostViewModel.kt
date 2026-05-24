@@ -19,9 +19,6 @@ class PostsViewModel : ViewModel() {
             try {
                 // Вызываем наш сетевой запрос
                 val posts: List<Post> = api.retrofitService.getPosts().result
-
-                // УРА! Данные получены!
-                // Теперь с ними можно работать: вывести в лог, сохранить в StateFlow/LiveData для UI
                 Log.d("NetworkResult", "Успешно загружено постов: ${posts.size}")
                 posts.forEach { post ->
                     Log.d("NetworkResult", "Пост: ${post.title} от ${post.author}")
