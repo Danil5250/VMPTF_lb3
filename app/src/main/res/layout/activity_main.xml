@@ -69,6 +69,26 @@
             android:textSize="14sp" />
     </LinearLayout>
 
+    <!-- Category filter chips -->
+    <HorizontalScrollView
+        android:id="@+id/hsvCategories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        android:scrollbars="none"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/llCategoryChips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical" />
+
+    </HorizontalScrollView>
+
     <TextView
         android:id="@+id/tvResultsCount"
         android:layout_width="match_parent"
@@ -79,6 +99,7 @@
         android:textColor="#6B7280"
         android:textSize="12sp"
         android:visibility="gone" />
+
 
     <!-- Loading spinner -->
     <ProgressBar

@@ -1,5 +1,6 @@
 package com.vmptf.mobile
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -7,6 +8,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -20,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vmptf.mobile.features.auth.view.LoginActivity
 import com.vmptf.mobile.features.auth.view.RegisterActivity
+import com.vmptf.mobile.features.posts.domain.model.Category
 import com.vmptf.mobile.features.posts.domain.view.PostsViewModel
 import com.vmptf.mobile.features.posts.view.PostsAdapter
 import kotlinx.coroutines.Job
@@ -40,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutError: LinearLayout
     private lateinit var tvError: TextView
     private lateinit var layoutEmpty: LinearLayout
+    private lateinit var hsvCategories: HorizontalScrollView
+    private lateinit var llCategoryChips: LinearLayout
 
     private var searchDebounceJob: Job? = null
 
@@ -63,6 +68,8 @@ class MainActivity : AppCompatActivity() {
         layoutError = findViewById(R.id.layoutError)
         tvError = findViewById(R.id.tvError)
         layoutEmpty = findViewById(R.id.layoutEmpty)
+        hsvCategories = findViewById(R.id.hsvCategories)
+        llCategoryChips = findViewById(R.id.llCategoryChips)
 
         // Setup RecyclerView
         adapter = PostsAdapter()
@@ -113,6 +120,24 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Observe categories — render chips
+        lifecycleScope.launch {
+            viewModel.categories.collect { categories ->
+                if (categories.isNotEmpty()) {
+                    renderCategoryChips(categories)
+                    hsvCategories.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        // Observe selected category ids — update chip styles
+        lifecycleScope.launch {
+            viewModel.selectedCategoryIds.collect { selectedIds ->
+                updateChipStyles(selectedIds)
+                triggerSearch()
+            }
+        }
+
         btnLogin.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
@@ -123,7 +148,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Search with 400ms debounce — sends request to GET /api/blogs/qs?search=...
+        // Search with 400ms debounce — sends request to GET /api/blogs/qs?search=...&categoryIds=...
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -131,13 +156,68 @@ class MainActivity : AppCompatActivity() {
                 searchDebounceJob?.cancel()
                 searchDebounceJob = lifecycleScope.launch {
                     delay(400)
-                    viewModel.searchPosts(s?.toString()?.trim())
+                    triggerSearch()
                 }
             }
         })
 
         // Initial load — all posts via /api/blogs/qs
         viewModel.searchPosts()
+    }
+
+    private fun triggerSearch() {
+        val query = etSearch.text?.toString()?.trim()
+        val categoryIds = viewModel.selectedCategoryIds.value.toList()
+        viewModel.searchPosts(
+            query = query,
+            categoryIds = categoryIds
+        )
+    }
+
+    private fun renderCategoryChips(categories: List<Category>) {
+        llCategoryChips.removeAllViews()
+        categories.forEach { category ->
+            val chip = buildCategoryChip(this, category)
+            chip.setOnClickListener {
+                viewModel.toggleCategory(category.id)
+            }
+            llCategoryChips.addView(chip)
+        }
+    }
+
+    private fun updateChipStyles(selectedIds: Set<Int>) {
+        for (i in 0 until llCategoryChips.childCount) { // i = 0; i < llCategoryChips.childCount
+            val chip = llCategoryChips.getChildAt(i) as? TextView ?: continue
+            val categoryId = chip.tag as? Int ?: continue
+            val isSelected = selectedIds.contains(categoryId)
+            if (isSelected) {
+                chip.setBackgroundColor(0xFF6366F1.toInt())
+                chip.setTextColor(0xFFFFFFFF.toInt())
+            } else {
+                chip.setBackgroundResource(R.drawable.chip_category)
+                chip.setTextColor(0xFF818CF8.toInt())
+            }
+        }
+    }
+
+    private fun buildCategoryChip(context: Context, category: Category): TextView {
+        return TextView(context).apply {
+            tag = category.id
+            text = category.name
+            textSize = 12f
+            setTextColor(0xFF818CF8.toInt())
+            background = context.getDrawable(R.drawable.chip_category)
+            val px10 = (10 * context.resources.displayMetrics.density).toInt()
+            val px5 = (5 * context.resources.displayMetrics.density).toInt()
+            val px8 = (8 * context.resources.displayMetrics.density).toInt()
+            setPadding(px10, px5, px10, px5)
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            params.setMargins(0, 0, px8, 0)
+            layoutParams = params
+        }
     }
 
     private fun pluralPosts(count: Int): String = when {

@@ -1,6 +1,7 @@
 package com.vmptf.mobile.core.data.network
 
 import com.vmptf.mobile.features.auth.data.api.AuthApiService
+import com.vmptf.mobile.features.posts.data.response.CategoriesApiService
 import com.vmptf.mobile.features.posts.data.response.PostApiService
 
 
@@ -18,5 +19,10 @@ object api {
     val authService: AuthApiService by lazy {
         RetrofitClient.getClient(BASE_URL)
             .create(AuthApiService::class.java)
+    }
+
+    val categoriesService: CategoriesApiService by lazy {
+        RetrofitClient.getClient(BASE_URL)
+            .create(CategoriesApiService::class.java)
     }
 }
