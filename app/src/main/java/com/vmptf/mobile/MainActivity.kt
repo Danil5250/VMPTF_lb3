@@ -38,6 +38,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var btnLogin: Button
     private lateinit var btnRegister: Button
+    private lateinit var btnLogout: Button
+    private lateinit var tvLoggedInAs: TextView
     private lateinit var rvPosts: RecyclerView
     private lateinit var pbPosts: ProgressBar
     private lateinit var etSearch: EditText
@@ -63,6 +65,8 @@ class MainActivity : AppCompatActivity() {
 
         btnLogin = findViewById(R.id.btnLogin)
         btnRegister = findViewById(R.id.btnRegister)
+        btnLogout = findViewById(R.id.btnLogout)
+        tvLoggedInAs = findViewById(R.id.tvLoggedInAs)
         rvPosts = findViewById(R.id.rvPosts)
         pbPosts = findViewById(R.id.pbPosts)
         etSearch = findViewById(R.id.etSearch)
@@ -73,10 +77,18 @@ class MainActivity : AppCompatActivity() {
         hsvCategories = findViewById(R.id.hsvCategories)
         llCategoryChips = findViewById(R.id.llCategoryChips)
 
+        // Update auth UI based on stored session
+        updateAuthUI()
+
         // Setup RecyclerView
         adapter = PostsAdapter { post ->
+            val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
+            val userId = prefs.getInt("user_id", -1)
+            val userName = prefs.getString("user_name", null)
             val intent = Intent(this, PostDetailActivity::class.java)
             intent.putExtra(PostDetailActivity.EXTRA_POST_JSON, Gson().toJson(post))
+            intent.putExtra(PostDetailActivity.EXTRA_USER_ID, if (userId != -1) userId else -1)
+            intent.putExtra(PostDetailActivity.EXTRA_USER_NAME, userName)
             startActivity(intent)
         }
         rvPosts.layoutManager = LinearLayoutManager(this)
@@ -154,6 +166,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        btnLogout.setOnClickListener {
+            // Clear auth prefs
+            getSharedPreferences("auth_prefs", MODE_PRIVATE).edit().clear().apply()
+            updateAuthUI()
+        }
+
         // Search with 400ms debounce — sends request to GET /api/blogs/qs?search=...&categoryIds=...
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
@@ -169,6 +187,32 @@ class MainActivity : AppCompatActivity() {
 
         // Initial load — all posts via /api/blogs/qs
         viewModel.searchPosts()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh auth UI when returning from LoginActivity
+        updateAuthUI()
+    }
+
+    private fun updateAuthUI() {
+        val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
+        val userId = prefs.getInt("user_id", -1)
+        val userName = prefs.getString("user_name", null)
+        val isLoggedIn = userId != -1
+
+        if (isLoggedIn) {
+            btnLogin.visibility = View.GONE
+            btnRegister.visibility = View.GONE
+            btnLogout.visibility = View.VISIBLE
+            tvLoggedInAs.text = "${userName ?: "Користувач"}"
+            tvLoggedInAs.visibility = View.VISIBLE
+        } else {
+            btnLogin.visibility = View.VISIBLE
+            btnRegister.visibility = View.VISIBLE
+            btnLogout.visibility = View.GONE
+            tvLoggedInAs.visibility = View.GONE
+        }
     }
 
     private fun triggerSearch() {

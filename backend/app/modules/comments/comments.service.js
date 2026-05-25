@@ -1,5 +1,22 @@
 const prisma = require("../../config/db")
 
+module.exports.getCommentsByPost = async (req, res) => {
+    try {
+        const postId = Number(req.query.postId);
+        if (!postId) {
+            return res.status(400).json({ error: "postId is required" });
+        }
+        const comments = await prisma.comment.findMany({
+            where: { postId },
+            include: { user: { select: { id: true, name: true, email: true } } },
+            orderBy: { createdAt: 'asc' }
+        });
+        res.status(200).json(comments);
+    } catch (error) {
+        console.error("Error fetching comments:", error.message);
+        res.status(500).json({ error: "Error fetching comments", details: error.message });
+    }
+}
 
 module.exports.createComment = async (req, res) => {
     try {

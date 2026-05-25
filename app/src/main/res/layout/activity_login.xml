@@ -14,6 +14,26 @@
         android:orientation="vertical"
         android:padding="32dp">
 
+        <!-- AppBar with back arrow -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#0F1117"
+            app:elevation="0dp">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="#0F1117"
+                app:navigationIcon="@drawable/ic_arrow_back"
+                app:navigationContentDescription="Назад"
+                app:titleTextColor="#FFFFFF"
+                app:subtitleTextColor="#9CA3AF" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
         <!-- Logo / Title -->
 
         <TextView

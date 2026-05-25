@@ -100,7 +100,113 @@
                 android:layout_height="wrap_content"
                 android:textColor="#D1D5DB"
                 android:textSize="15sp"
-                android:lineSpacingMultiplier="1.6" />
+                android:lineSpacingMultiplier="1.6"
+                android:layout_marginBottom="32dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#2D3148"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Section label -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Коментарі"
+                android:textColor="#F3F4F6"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Add comment form (only for authorized users) -->
+            <LinearLayout
+                android:id="@+id/layoutAddComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Додати коментар"
+                    android:textColor="#818CF8"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <EditText
+                    android:id="@+id/etCommentInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="80dp"
+                    android:gravity="top|start"
+                    android:hint="Введіть ваш коментар..."
+                    android:textColorHint="#6B7280"
+                    android:textColor="#F3F4F6"
+                    android:textSize="14sp"
+                    android:background="@drawable/input_background"
+                    android:padding="12dp"
+                    android:layout_marginBottom="10dp"
+                    android:inputType="textMultiLine"
+                    android:scrollHorizontally="false" />
+
+                <Button
+                    android:id="@+id/btnSubmitComment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Надіслати"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/button_primary"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:layout_gravity="end" />
+
+            </LinearLayout>
+
+            <!-- Not-logged-in notice -->
+            <TextView
+                android:id="@+id/tvLoginToComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Увійдіть, щоб залишити коментар"
+                android:textColor="#6B7280"
+                android:textSize="13sp"
+                android:textStyle="italic"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone" />
+
+            <!-- Loading indicator for comments -->
+            <ProgressBar
+                android:id="@+id/pbComments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone" />
+
+            <!-- Empty comments placeholder -->
+            <TextView
+                android:id="@+id/tvNoComments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Коментарів ще немає. Будьте першим!"
+                android:textColor="#6B7280"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:padding="16dp"
+                android:visibility="gone" />
+
+            <!-- Comments RecyclerView (non-scrollable, inside NestedScrollView) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvComments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:visibility="gone" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

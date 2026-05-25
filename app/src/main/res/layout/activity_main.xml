@@ -32,6 +32,26 @@
             android:layout_marginHorizontal="20dp"
             android:layout_height="wrap_content"
             android:text="Register" />
+
+        <!-- Shown when logged in -->
+        <TextView
+            android:id="@+id/tvLoggedInAs"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="#818CF8"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_height="wrap_content"
+            android:text="Вийти"
+            android:visibility="gone" />
+
     </LinearLayout>
 
     <LinearLayout

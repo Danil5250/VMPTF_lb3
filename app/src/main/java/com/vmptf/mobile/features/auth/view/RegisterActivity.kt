@@ -2,6 +2,7 @@ package com.vmptf.mobile.features.auth.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
@@ -9,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import com.vmptf.mobile.R
 import com.vmptf.mobile.features.auth.domain.view.AuthState
 import com.vmptf.mobile.features.auth.domain.view.AuthViewModel
@@ -37,6 +39,12 @@ class RegisterActivity : AppCompatActivity() {
         pbLoading = findViewById(R.id.pbRegister)
         tvGoToLogin = findViewById(R.id.tvGoToLogin)
 
+        // Toolbar with back navigation
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = ""
+
         btnRegister.setOnClickListener {
             val name = etName.text.toString().trim()
             val email = etEmail.text.toString().trim()
@@ -45,7 +53,16 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         tvGoToLogin.setOnClickListener {
-            finish() // повернутись до LoginActivity
+            val intent = Intent(this, LoginActivity::class.java)
+            //підход потрібен щоб стек відкритих activity не забивався і перехід назад працював
+            /*
+                якщо RegisterActivity до цього була викликана - очищуємо всі activity,
+                що були в стеці перед викликом RegisterActivity
+                якщо не була просто відкриваємо RegisterActivity
+             */
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()    //закриваємо поточний register
         }
 
         viewModel.authState.observe(this) { state ->
@@ -75,5 +92,14 @@ class RegisterActivity : AppCompatActivity() {
                 else -> Unit
             }
         }
+    }
+
+    // Back button in toolbar
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

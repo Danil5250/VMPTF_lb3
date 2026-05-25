@@ -2,6 +2,7 @@ package com.vmptf.mobile.features.auth.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
@@ -9,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import com.google.android.material.textfield.TextInputEditText
 import com.vmptf.mobile.R
 import com.vmptf.mobile.features.auth.domain.view.AuthState
@@ -43,8 +45,23 @@ class LoginActivity : AppCompatActivity() {
             viewModel.login(email, password)
         }
 
+        // Toolbar with back navigation
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = ""
+
         tvGoToRegister.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
+            val intent = Intent(this, RegisterActivity::class.java)
+            //підход потрібен щоб стек відкритих activity не забивався і перехід назад працював
+            /*
+                якщо RegisterActivity до цього була викликана - очищуємо всі activity,
+                що були в стеці перед викликом RegisterActivity
+                якщо не була просто відкриваємо RegisterActivity
+             */
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()    //закриваємо поточний login
         }
 
         viewModel.authState.observe(this) { state ->
@@ -63,8 +80,14 @@ class LoginActivity : AppCompatActivity() {
                     pbLoading.visibility = View.GONE
                     btnLogin.isEnabled = true
                     Toast.makeText(this, "Ласкаво просимо, ${state.user.name}!", Toast.LENGTH_SHORT).show()
+                    // Persist logged-in user info
+                    val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
+                    prefs.edit()
+                        .putInt("user_id", state.user.id)
+                        .putString("user_name", state.user.name)
+                        .putString("user_email", state.user.email)
+                        .apply()
                     // Navigate to main screen
-                    startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 }
                 is AuthState.Error -> {
@@ -76,5 +99,14 @@ class LoginActivity : AppCompatActivity() {
                 else -> Unit
             }
         }
+    }
+
+    // Back button in toolbar
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

@@ -1,5 +1,9 @@
 const commentService = require("./comments.service")
 
+module.exports.getCommentsByPost = async (req, res) => {
+    await commentService.getCommentsByPost(req, res)
+}
+
 module.exports.createComment = async (req, res) => {
     await commentService.createComment(req, res)
 }
