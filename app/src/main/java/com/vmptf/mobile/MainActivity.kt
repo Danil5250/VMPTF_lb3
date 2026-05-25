@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var btnLogin: Button
     private lateinit var btnRegister: Button
+    private lateinit var btnAdminPanel: Button
     private lateinit var btnLogout: Button
     private lateinit var tvLoggedInAs: TextView
     private lateinit var rvPosts: RecyclerView
@@ -65,6 +67,7 @@ class MainActivity : AppCompatActivity() {
 
         btnLogin = findViewById(R.id.btnLogin)
         btnRegister = findViewById(R.id.btnRegister)
+        btnAdminPanel = findViewById(R.id.btnAdminPanel)
         btnLogout = findViewById(R.id.btnLogout)
         tvLoggedInAs = findViewById(R.id.tvLoggedInAs)
         rvPosts = findViewById(R.id.rvPosts)
@@ -97,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         // Observe posts list
         lifecycleScope.launch {
             viewModel.posts.collect { posts ->
-                adapter.submitList(posts)
+                adapter.submitList(posts.toList())
                 if (posts.isNotEmpty()) {
                     tvResultsCount.text = "Знайдено: ${posts.size} ${pluralPosts(posts.size)}"
                     tvResultsCount.visibility = View.VISIBLE
@@ -116,10 +119,10 @@ class MainActivity : AppCompatActivity() {
             viewModel.isLoading.collect { loading ->
                 pbPosts.visibility = if (loading) View.VISIBLE else View.GONE
                 if (loading) {
-                    rvPosts.visibility = View.GONE
                     layoutError.visibility = View.GONE
                     layoutEmpty.visibility = View.GONE
-                    tvResultsCount.visibility = View.GONE
+//                    rvPosts.visibility = View.GONE
+//                    tvResultsCount.visibility = View.GONE
                 }
             }
         }
@@ -166,6 +169,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        btnAdminPanel.setOnClickListener {
+            val intent = Intent(this, com.vmptf.mobile.features.admin.AdminActivity::class.java)
+            startActivity(intent)
+        }
+
         btnLogout.setOnClickListener {
             // Clear auth prefs
             getSharedPreferences("auth_prefs", MODE_PRIVATE).edit().clear().apply()
@@ -174,7 +182,9 @@ class MainActivity : AppCompatActivity() {
 
         // Search with 400ms debounce — sends request to GET /api/blogs/qs?search=...&categoryIds=...
         etSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) =
+                Unit
+
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
             override fun afterTextChanged(s: Editable?) {
                 searchDebounceJob?.cancel()
@@ -184,13 +194,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-
-        // Initial load — all posts via /api/blogs/qs
-        viewModel.searchPosts()
     }
 
     override fun onResume() {
         super.onResume()
+        // Initial load
+        triggerSearch()
         // Refresh auth UI when returning from LoginActivity
         updateAuthUI()
     }
@@ -199,6 +208,7 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
         val userId = prefs.getInt("user_id", -1)
         val userName = prefs.getString("user_name", null)
+        val userRole = prefs.getString("user_role", null)
         val isLoggedIn = userId != -1
 
         if (isLoggedIn) {
@@ -207,11 +217,17 @@ class MainActivity : AppCompatActivity() {
             btnLogout.visibility = View.VISIBLE
             tvLoggedInAs.text = "${userName ?: "Користувач"}"
             tvLoggedInAs.visibility = View.VISIBLE
+            if (userRole == "ADMIN") {
+                btnAdminPanel.visibility = View.VISIBLE
+            } else {
+                btnAdminPanel.visibility = View.GONE
+            }
         } else {
             btnLogin.visibility = View.VISIBLE
             btnRegister.visibility = View.VISIBLE
             btnLogout.visibility = View.GONE
             tvLoggedInAs.visibility = View.GONE
+            btnAdminPanel.visibility = View.GONE
         }
     }
 
@@ -230,6 +246,7 @@ class MainActivity : AppCompatActivity() {
             val chip = buildCategoryChip(this, category)
             chip.setOnClickListener {
                 viewModel.toggleCategory(category.id)
+                Log.d("Category", "${category.id}")
             }
             llCategoryChips.addView(chip)
         }

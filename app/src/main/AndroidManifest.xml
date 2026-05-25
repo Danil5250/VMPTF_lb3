@@ -37,6 +37,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name=".features.admin.AdminActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+            
+        <activity
+            android:name=".features.admin.AdminEditPostActivity"
+            android:exported="false"
+            android:parentActivityName=".features.admin.AdminActivity" />
     </application>
 
 </manifest>

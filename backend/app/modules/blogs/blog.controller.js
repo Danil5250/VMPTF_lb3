@@ -20,3 +20,7 @@ module.exports.createPost = async (req, res) => {
 module.exports.updatePost = async (req, res) => {
     await blogService.updatePost(req, res)
 }
+
+module.exports.deletePost = async (req, res) => {
+    await blogService.deletePost(req, res)
+}

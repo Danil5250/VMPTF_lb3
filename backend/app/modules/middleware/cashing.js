@@ -26,3 +26,7 @@ module.exports.cacheMiddleware = (req, res, next) => {
   //виклик настпуної функції
   next();
 };
+
+module.exports.clearCache = () => {
+  myCache.flushAll();
+};

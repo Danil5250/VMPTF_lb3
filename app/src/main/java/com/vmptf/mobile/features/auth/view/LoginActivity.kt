@@ -86,6 +86,8 @@ class LoginActivity : AppCompatActivity() {
                         .putInt("user_id", state.user.id)
                         .putString("user_name", state.user.name)
                         .putString("user_email", state.user.email)
+                        .putString("user_role", state.user.role)
+                        .putString("token", state.token)
                         .apply()
                     // Navigate to main screen
                     finish()
