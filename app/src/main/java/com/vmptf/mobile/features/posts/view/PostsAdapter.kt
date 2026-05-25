@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vmptf.mobile.R
 import com.vmptf.mobile.features.posts.domain.model.Post
 
-class PostsAdapter : ListAdapter<Post, PostsAdapter.PostViewHolder>(PostDiffCallback()) {
+class PostsAdapter(
+    private val onItemClick: (Post) -> Unit = {}
+) : ListAdapter<Post, PostsAdapter.PostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -21,7 +23,9 @@ class PostsAdapter : ListAdapter<Post, PostsAdapter.PostViewHolder>(PostDiffCall
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val post = getItem(position)
+        holder.bind(post)
+        holder.itemView.setOnClickListener { onItemClick(post) }
     }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

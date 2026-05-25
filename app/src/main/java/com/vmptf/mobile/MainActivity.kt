@@ -20,10 +20,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.vmptf.mobile.features.auth.view.LoginActivity
 import com.vmptf.mobile.features.auth.view.RegisterActivity
 import com.vmptf.mobile.features.posts.domain.model.Category
 import com.vmptf.mobile.features.posts.domain.view.PostsViewModel
+import com.vmptf.mobile.features.posts.view.PostDetailActivity
 import com.vmptf.mobile.features.posts.view.PostsAdapter
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -72,7 +74,11 @@ class MainActivity : AppCompatActivity() {
         llCategoryChips = findViewById(R.id.llCategoryChips)
 
         // Setup RecyclerView
-        adapter = PostsAdapter()
+        adapter = PostsAdapter { post ->
+            val intent = Intent(this, PostDetailActivity::class.java)
+            intent.putExtra(PostDetailActivity.EXTRA_POST_JSON, Gson().toJson(post))
+            startActivity(intent)
+        }
         rvPosts.layoutManager = LinearLayoutManager(this)
         rvPosts.adapter = adapter
 

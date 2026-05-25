@@ -25,6 +25,10 @@
             android:name=".features.auth.view.RegisterActivity"
             android:exported="false" /> <!-- Main app screen (opened after successful login) -->
         <activity
+            android:name=".features.posts.view.PostDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+        <activity
             android:name=".MainActivity"
             android:exported="true" >
             <intent-filter>
