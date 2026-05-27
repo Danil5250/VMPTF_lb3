@@ -40,9 +40,18 @@ module.exports.createComment = async (req, res) => {
 
 module.exports.deleteComment = async (req, res) => {
     try {
+        const commentId = Number(req.params.id);
+        const comment = await prisma.comment.findUnique({
+            where: { id: commentId }
+        });
+
+        if (!comment) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+
         const deletedComment = await prisma.comment.delete({
-            where: { id: Number(req.params.id) }
-        })
+            where: { id: commentId }
+        });
         res.status(200).json({ message: "Comment deleted successfully", deletedComment});
     }
     catch (error) {

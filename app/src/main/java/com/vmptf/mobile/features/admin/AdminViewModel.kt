@@ -11,7 +11,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class AdminViewModel : ViewModel() {
-
+    /*
+            Mutable = можно змінювати значення (value яке можна перезаписувати)
+            StateFlow = зберігає текущий стан та повідомляє підписників
+         */
+    //incapsulation
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
     val posts: StateFlow<List<Post>> = _posts
 
@@ -23,17 +27,23 @@ class AdminViewModel : ViewModel() {
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
-    
-    private val _operationSuccess = MutableStateFlow<Boolean?>(null)
+
+    private val _operationSuccess = MutableStateFlow<Boolean?>(null) //для зміни model та value
+    //екран може тільки підписуватись на поток даних щоб перемальовувати інтерфейс
     val operationSuccess: StateFlow<Boolean?> = _operationSuccess
 
+    // when AdminViewModel is created data from server uploaded
     init {
         loadPosts()
         loadCategories()
     }
 
     fun loadPosts() {
-        viewModelScope.launch {
+        //requests will be automatically cancelled when user closes activity
+        // chose viewModelScope but not lifecycleScope, because
+        // viewModelScope for data, lifecycleScope for ui, viewModelScope has longer life
+        // after phone rotation lifecycleScope dies, but viewModelScope works
+        viewModelScope.launch { // start coroutine
             _isLoading.value = true
             try {
                 val result = api.retrofitService.getPosts()

@@ -35,8 +35,9 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: PostsViewModel by viewModels()
+    //var can be changed later
     private lateinit var adapter: PostsAdapter
-
+    // lateinit = variable will be initialized later, it won't be null now
     private lateinit var btnLogin: Button
     private lateinit var btnRegister: Button
     private lateinit var btnAdminPanel: Button
@@ -51,7 +52,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutEmpty: LinearLayout
     private lateinit var hsvCategories: HorizontalScrollView
     private lateinit var llCategoryChips: LinearLayout
-
+    //корутина для виконання асинхронного завдання
+    //запуск корутини повертає Job
+    // чи завершена задача, дочекатись чи ні, відмінити
     private var searchDebounceJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +68,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        //пошук на view по id
         btnLogin = findViewById(R.id.btnLogin)
         btnRegister = findViewById(R.id.btnRegister)
         btnAdminPanel = findViewById(R.id.btnAdminPanel)
@@ -153,6 +157,7 @@ class MainActivity : AppCompatActivity() {
 
         // Observe selected category ids — update chip styles
         lifecycleScope.launch {
+            //when selectedCategoryIds changes code works
             viewModel.selectedCategoryIds.collect { selectedIds ->
                 updateChipStyles(selectedIds)
                 triggerSearch()
@@ -205,6 +210,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateAuthUI() {
+        //getSharedPreferences = for storing small data in application memory in xml file
+        //they are deleted after closing
+        //key-value pairs
         val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
         val userId = prefs.getInt("user_id", -1)
         val userName = prefs.getString("user_name", null)
@@ -254,6 +262,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateChipStyles(selectedIds: Set<Int>) {
         for (i in 0 until llCategoryChips.childCount) { // i = 0; i < llCategoryChips.childCount
+            //we get element from getChildAt at index i safety of type TextView
+            //if it's type is TextView = it gets it, otherwise it's type is null and skip iteration
             val chip = llCategoryChips.getChildAt(i) as? TextView ?: continue
             val categoryId = chip.tag as? Int ?: continue
             val isSelected = selectedIds.contains(categoryId)
@@ -268,7 +278,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun buildCategoryChip(context: Context, category: Category): TextView {
-        return TextView(context).apply {
+        return TextView(context).apply { //create new object, apply = init, create immediately
             tag = category.id
             text = category.name
             textSize = 12f

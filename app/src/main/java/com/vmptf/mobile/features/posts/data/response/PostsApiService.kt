@@ -17,6 +17,7 @@ data class PostRequest(
     val categoryIds: List<Int>
 )
 
+//routes using which mobile works with backend
 interface PostApiService {
     @GET("blogs")
     suspend fun getPosts(): BlogsResponse

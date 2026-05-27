@@ -21,11 +21,12 @@ import java.util.Date
 import java.util.Locale
 
 class AdminEditPostActivity : AppCompatActivity() {
-
+    //companion object = static (creates constant as static field of the class)
     companion object {
         const val EXTRA_POST_JSON = "extra_post_json"
     }
-
+    //after each screen rotating activity recreates, data can be lost
+    //it stores current application state
     private val viewModel: AdminViewModel by viewModels()
 
     private lateinit var etTitle: EditText
@@ -36,6 +37,7 @@ class AdminEditPostActivity : AppCompatActivity() {
 
     private var editingPost: Post? = null
     private var allCategories: List<Category> = emptyList()
+    // mutableSetOf this set can be changed later, setOf() can't
     private var selectedCategoryIds = mutableSetOf<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +45,8 @@ class AdminEditPostActivity : AppCompatActivity() {
         setContentView(R.layout.activity_admin_edit_post)
 
         val toolbar: Toolbar = findViewById(R.id.toolbarEditPost)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(toolbar) //toolbar is set to main ActionBar (upper line) of activity
+        //show in left corner '<-' go back
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         etTitle = findViewById(R.id.etEditTitle)
@@ -52,6 +55,7 @@ class AdminEditPostActivity : AppCompatActivity() {
         tvSelectCategories = findViewById(R.id.tvSelectCategories)
         btnSave = findViewById(R.id.btnSavePost)
 
+        //get passed object
         val postJson = intent.getStringExtra(EXTRA_POST_JSON)
         if (postJson != null) {
             editingPost = Gson().fromJson(postJson, Post::class.java)
@@ -61,7 +65,11 @@ class AdminEditPostActivity : AppCompatActivity() {
             supportActionBar?.title = "Новий пост"
         }
 
+        //lifecycleScope = CoroutineScope for starting coroutines (async methods to not block interface)
+        // safely activity destroyed -> coroutine destroyed; no memory leaks; no manual threads stopping
+        // lifecycleScope lives until Activity, Fragment (part of activity) lives
         lifecycleScope.launch {
+            //when categories are changed
             viewModel.categories.collect { categories ->
                 allCategories = categories
                 updateCategoriesText()
@@ -129,6 +137,7 @@ class AdminEditPostActivity : AppCompatActivity() {
         if (selectedCategoryIds.isEmpty()) {
             tvSelectCategories.text = "Вибрати категорії"
         } else {
+            //трансформуємо id у назву
             val selectedNames = allCategories.filter { it.id in selectedCategoryIds }.joinToString(", ") { it.name }
             tvSelectCategories.text = selectedNames
         }
@@ -137,7 +146,7 @@ class AdminEditPostActivity : AppCompatActivity() {
     private fun showCategorySelectionDialog() {
         if (allCategories.isEmpty()) return
 
-        val categoryNames = allCategories.map { it.name }.toTypedArray()
+        val categoryNames = allCategories.map { it.name }.toTypedArray() //saves elements type
         val checkedItems = allCategories.map { selectedCategoryIds.contains(it.id) }.toBooleanArray()
 
         AlertDialog.Builder(this)
@@ -158,7 +167,7 @@ class AdminEditPostActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
+        if (item.itemId == android.R.id.home) { // if button '<-' is clicked, close current activity
             finish()
             return true
         }

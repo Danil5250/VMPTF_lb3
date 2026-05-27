@@ -18,7 +18,8 @@ import com.vmptf.mobile.features.auth.domain.view.AuthViewModel
 import com.vmptf.mobile.MainActivity
 
 class LoginActivity : AppCompatActivity() {
-
+    //after each screen rotating activity recreates, data can be lost
+    //it stores current application state
     private val viewModel: AuthViewModel by viewModels()
 
     private lateinit var etEmail: android.widget.EditText
@@ -47,7 +48,8 @@ class LoginActivity : AppCompatActivity() {
 
         // Toolbar with back navigation
         val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(toolbar) //toolbar is set to main ActionBar (upper line) of activity
+        //show in left corner '<-' go back
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = ""
 
@@ -64,6 +66,8 @@ class LoginActivity : AppCompatActivity() {
             finish()    //закриваємо поточний login
         }
 
+        // activity subscribes on updating from viewModel
+        //when authState changes based on changes do something
         viewModel.authState.observe(this) { state ->
             when (state) {
                 is AuthState.Idle -> {
@@ -81,6 +85,8 @@ class LoginActivity : AppCompatActivity() {
                     btnLogin.isEnabled = true
                     Toast.makeText(this, "Ласкаво просимо, ${state.user.name}!", Toast.LENGTH_SHORT).show()
                     // Persist logged-in user info
+                    // for saving small data in memory of application in xml
+                    // key -> value
                     val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
                     prefs.edit()
                         .putInt("user_id", state.user.id)

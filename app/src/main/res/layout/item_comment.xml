@@ -31,6 +31,18 @@
             android:textColor="#6B7280"
             android:textSize="11sp" />
 
+        <ImageView
+            android:id="@+id/ivDeleteComment"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_delete"
+            android:contentDescription="Delete comment"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone" />
+
     </LinearLayout>
 
     <!-- Comment text -->

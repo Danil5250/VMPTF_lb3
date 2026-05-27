@@ -15,10 +15,13 @@ import kotlinx.coroutines.launch
 class PostsViewModel : ViewModel() {
 
     // MutableStateFlow = ui recognize when data is changed = change the ui
+    //when we put something to _posts it automatically notifies the activity to update ui
+    //Mutable = can be changed, but only value
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
 
-    //observable state-holder Kotlin Coroutines
-    //notifies ui when is changed
+    // observable state-holder Kotlin Coroutines
+    // notifies ui when is changed
+    // StateFlow = зберігає текущий стан та повідомляє підписників
     val posts: StateFlow<List<Post>> = _posts
 
     private val _isLoading = MutableStateFlow(false)
@@ -35,14 +38,21 @@ class PostsViewModel : ViewModel() {
     private val _selectedCategoryIds = MutableStateFlow<Set<Int>>(emptySet())
     val selectedCategoryIds: StateFlow<Set<Int>> = _selectedCategoryIds
 
+    //for solving race conditions, Job = descriptor fow working with coroutine
+    //to stop previous request with old data which hasn't ended
+    // and start new request if user has inputted a new search or change filters
     private var searchJob: Job? = null
 
+    // when PostViewModel is created data from server uploaded
     init {
         loadCategories()
     }
 
     // Load all categories from /api/categories
     fun loadCategories() {
+        // chose viewModelScope but not lifecycleScope, because
+        // viewModelScope for data, lifecycleScope for ui, viewModelScope has longer life
+        //after phone rotation lifecycleScope dies, but viewModelScope works
         viewModelScope.launch {
             try {
                 val response = api.categoriesService.getCategories()
@@ -66,9 +76,11 @@ class PostsViewModel : ViewModel() {
     }
 
     // Викликається при запуску та кожному пошуку/скиданні
+    // to stop previous request with old data which hasn't ended
+    // and start new request if user has inputted a new search or change filters
     fun searchPosts(query: String? = null, categoryIds: List<Int>? = null) {
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
+        searchJob?.cancel() //cancel previous coroutine
+        searchJob = viewModelScope.launch { //start a new coroutine, returns a new coroutine
             _isLoading.value = true
             _error.value = null
             try {

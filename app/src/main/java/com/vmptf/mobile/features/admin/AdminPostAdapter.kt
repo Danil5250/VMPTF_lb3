@@ -13,9 +13,12 @@ import com.vmptf.mobile.features.posts.domain.model.Post
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+//manage list creation and relate data with it
+// : = inheritance or implementation of class, interface
 class AdminPostAdapter(
-    private val onEditClick: (Post) -> Unit,
+    private val onEditClick: (Post) -> Unit, //Unit = function returns nothing
     private val onDeleteClick: (Post) -> Unit
+    //list adapter checks what elements has been changed from back and without flashing (мигання)
 ) : ListAdapter<Post, AdminPostAdapter.AdminPostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AdminPostViewHolder {
@@ -27,6 +30,9 @@ class AdminPostAdapter(
         holder.bind(getItem(position))
     }
 
+    //inner = gives access to parent fields
+    //finds objects and saves links to them to not stop phone while scrolling
+    //otherwise links would refound after scrolling which costs a lot of
     inner class AdminPostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvTitle: TextView = itemView.findViewById(R.id.tvAdminPostTitle)
         private val tvDate: TextView = itemView.findViewById(R.id.tvAdminPostDate)
@@ -51,6 +57,8 @@ class AdminPostAdapter(
         }
     }
 
+    //how compare if current Post is new or no
+    // : = inheritance or implementation of class, interface
     class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
         override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean = oldItem.id == newItem.id
         override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean = oldItem == newItem

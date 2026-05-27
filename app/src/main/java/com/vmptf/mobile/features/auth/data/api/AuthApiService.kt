@@ -7,6 +7,7 @@ import com.vmptf.mobile.features.auth.data.model.RegisterResponse
 import retrofit2.http.Body
 import retrofit2.http.POST
 
+//routes using which mobile works with backend
 interface AuthApiService {
     //suspend - function which can pause coroutines without blocking the thread
     //used for asynchronous

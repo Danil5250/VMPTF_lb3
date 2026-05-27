@@ -19,11 +19,14 @@ import com.vmptf.mobile.R
 import kotlinx.coroutines.launch
 
 class AdminActivity : AppCompatActivity() {
-
+    //after each screen rotating activity recreates, data can be lost
+    //it stores current application state
     private val viewModel: AdminViewModel by viewModels()
+    //lateinit = will be initialized later
     private lateinit var adapter: AdminPostAdapter
     private lateinit var rvPosts: RecyclerView
     private lateinit var pbLoading: ProgressBar
+    //FloatingActionButton = плаваюча floating button with '+' in right down corner
     private lateinit var fabAddPost: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,10 +34,12 @@ class AdminActivity : AppCompatActivity() {
         setContentView(R.layout.activity_admin)
 
         val toolbar: Toolbar = findViewById(R.id.toolbarAdmin)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(toolbar) //toolbar is set to main ActionBar (upper line) of activity
+        //show in left corner '<-' go back
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         
         // Verify ADMIN role
+        //getSharedPreferences = small data is stored in app xml (key -> value)
         val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
         val role = prefs.getString("user_role", null)
         if (role != "ADMIN") {
@@ -47,13 +52,18 @@ class AdminActivity : AppCompatActivity() {
         pbLoading = findViewById(R.id.pbAdminPosts)
         fabAddPost = findViewById(R.id.fabAddPost)
 
+        //adapter for posts recycle viewer
         adapter = AdminPostAdapter(
+            //what to do when editting
             onEditClick = { post ->
+                //go to activity for editing
                 val intent = Intent(this, AdminEditPostActivity::class.java)
                 Log.d("Updating page coming", post.toString())
+                // pass object post as json to new activity
                 intent.putExtra(AdminEditPostActivity.EXTRA_POST_JSON, Gson().toJson(post))
                 startActivity(intent)
             },
+            //what to do when deleting
             onDeleteClick = { post ->
                 viewModel.deletePost(post.id)
             }
@@ -62,19 +72,25 @@ class AdminActivity : AppCompatActivity() {
         rvPosts.layoutManager = LinearLayoutManager(this)
         rvPosts.adapter = adapter
 
-        lifecycleScope.launch {
+        //lifecycleScope = CoroutineScope for starting coroutines (async methods to not block interface)
+        // safely activity destroyed -> coroutine destroyed; no memory leaks; no manual threads stopping
+        // lifecycleScope lives until Activity, Fragment (part of activity) lives
+        lifecycleScope.launch { //launch = start coroutine
+            //when new posts are occurred - we display them
             viewModel.posts.collect { posts ->
                 adapter.submitList(posts)
             }
         }
 
         lifecycleScope.launch {
+            //when isLoading changes - code in {} reworks = state changes
             viewModel.isLoading.collect { isLoading ->
                 pbLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
             }
         }
 
         lifecycleScope.launch {
+            //
             viewModel.error.collect { errorMsg ->
                 if (errorMsg != null) {
                     Toast.makeText(this@AdminActivity, errorMsg, Toast.LENGTH_SHORT).show()
@@ -84,6 +100,7 @@ class AdminActivity : AppCompatActivity() {
         }
 
         fabAddPost.setOnClickListener {
+            // open new activity
             val intent = Intent(this, AdminEditPostActivity::class.java)
             startActivity(intent)
         }

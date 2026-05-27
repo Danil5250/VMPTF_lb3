@@ -8,6 +8,9 @@ import com.vmptf.mobile.features.auth.data.model.RegisterResponse
 import com.vmptf.mobile.features.auth.domain.repository.AuthRepository
 
 // get data from backend
+//single source of data
+//isolate logic of getting data from the rest logic of application
+// : = implementation of AuthRepository
 class AuthRepositoryImpl(
     private val apiService: AuthApiService
 ) : AuthRepository {

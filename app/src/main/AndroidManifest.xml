@@ -16,7 +16,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Mobile"
         android:usesCleartextTraffic="true">
-        <!-- Auth entry point -->
         <activity
             android:name=".features.auth.view.LoginActivity"
             android:exported="false">

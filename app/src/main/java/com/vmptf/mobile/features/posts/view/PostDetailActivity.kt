@@ -14,12 +14,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vmptf.mobile.R
 import com.vmptf.mobile.core.data.network.api
 import com.vmptf.mobile.features.posts.domain.model.Category
+import com.vmptf.mobile.features.posts.domain.model.Comment
 import com.vmptf.mobile.features.posts.domain.model.CreateCommentRequest
 import com.vmptf.mobile.features.posts.domain.model.Post
 import com.google.gson.Gson
@@ -27,6 +29,7 @@ import kotlinx.coroutines.launch
 
 class PostDetailActivity : AppCompatActivity() {
 
+    //static fields of class PostDetailActivity
     companion object {
         const val EXTRA_POST_JSON = "extra_post_json"
         const val EXTRA_USER_ID = "extra_user_id"
@@ -41,16 +44,20 @@ class PostDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post_detail)
 
-        // Edge-to-edge
+        // Edge-to-edge = content красиво затікав під системні елементи, але важливі залишались
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.postDetailRoot)) { v, insets ->
+            //get gaps of system elements
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            //set appropriate paddings
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            //return configured object
             insets
         }
 
         // Toolbar with back navigation
         val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(toolbar) //toolbar is set to main ActionBar (upper line) of activity
+        //show in left corner '<-' go back
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = ""
 
@@ -91,8 +98,25 @@ class PostDetailActivity : AppCompatActivity() {
         val tvNoComments: TextView = findViewById(R.id.tvNoComments)
         val rvComments: RecyclerView = findViewById(R.id.rvComments)
 
+        val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
+        val currentUserId = prefs.getInt("user_id", -1)
+        val currentUserRole = prefs.getString("user_role", null)
+
         // Setup comments RecyclerView
-        commentsAdapter = CommentsAdapter()
+        commentsAdapter = CommentsAdapter(
+            currentUserId = currentUserId,
+            currentUserRole = currentUserRole,
+            onDeleteCommentClick = { comment ->
+                AlertDialog.Builder(this)
+                    .setTitle("Видалити коментар")
+                    .setMessage("Ви впевнені, що хочете видалити цей коментар?")
+                    .setPositiveButton("Видалити") { _, _ ->
+                        deleteComment(comment, pbComments, tvNoComments, rvComments)
+                    }
+                    .setNegativeButton("Скасувати", null)
+                    .show()
+            }
+        )
         rvComments.layoutManager = LinearLayoutManager(this)
         rvComments.adapter = commentsAdapter
 
@@ -155,7 +179,7 @@ class PostDetailActivity : AppCompatActivity() {
         tvNoComments: TextView,
         rvComments: RecyclerView
     ) {
-        lifecycleScope.launch {
+        lifecycleScope.launch { // create a new coroutine
             try {
                 api.commentsService.createComment(
                     CreateCommentRequest(
@@ -165,9 +189,39 @@ class PostDetailActivity : AppCompatActivity() {
                     )
                 )
                 etCommentInput.text?.clear()
+                //this@PostDetailActivity this of not coroutine, but this of PostDetailActivity
                 Toast.makeText(this@PostDetailActivity, "Коментар додано!", Toast.LENGTH_SHORT).show()
                 // Reload comments
                 loadComments(pbComments, tvNoComments, rvComments)
+            } catch (e: Exception) {
+                Toast.makeText(this@PostDetailActivity, "Помилка: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun deleteComment(
+        comment: Comment,
+        pbComments: ProgressBar,
+        tvNoComments: TextView,
+        rvComments: RecyclerView
+    ) {
+        val prefs = getSharedPreferences("auth_prefs", MODE_PRIVATE)
+        val token = prefs.getString("token", null)
+        if (token.isNullOrEmpty()) {
+            Toast.makeText(this, "Помилка авторизації", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val response = api.commentsService.deleteComment(comment.id)
+                if (response.isSuccessful) {
+                    Toast.makeText(this@PostDetailActivity, "Коментар видалено!", Toast.LENGTH_SHORT).show()
+                    // Reload comments
+                    loadComments(pbComments, tvNoComments, rvComments)
+                } else {
+                    Toast.makeText(this@PostDetailActivity, "Не вдалося видалити коментар", Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
                 Toast.makeText(this@PostDetailActivity, "Помилка: ${e.message}", Toast.LENGTH_SHORT).show()
             }

@@ -12,12 +12,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vmptf.mobile.R
 import com.vmptf.mobile.features.posts.domain.model.Post
 
+//adapter for RecycleView for showing list of posts
 class PostsAdapter(
     private val onItemClick: (Post) -> Unit = {}
+    //list adapter checks what elements has been changed from back and without flashing (мигання)
 ) : ListAdapter<Post, PostsAdapter.PostViewHolder>(PostDiffCallback()) {
 
+    //create card for data inflating
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = LayoutInflater.from(parent.context)
+            //inflate = R.layout.item_comment example for one comment inflation
+            //parent = container
+            // false = fill the data but not attach to RecycleView because RecycleView do it itself
             .inflate(R.layout.item_post, parent, false)
         return PostViewHolder(view)
     }
@@ -38,13 +44,13 @@ class PostsAdapter(
         fun bind(post: Post) {
             tvTitle.text = post.title
             tvContent.text = post.content ?: "Без змісту"
-            tvAuthor.text = "✍ ${post.author ?: "Невідомий"}"
+            tvAuthor.text = "${post.author ?: "Невідомий"}"
 
             // Format date — show first 10 chars of ISO string (yyyy-MM-dd)
             tvDate.text = if (post.createdAt.length >= 10) post.createdAt.substring(0, 10) else post.createdAt
 
             // Render category chips
-            llCategories.removeAllViews()
+            llCategories.removeAllViews() // clean llCategories from all elements added from code
             post.categories.forEach { category ->
                 val chip = buildCategoryChip(itemView.context, category.name)
                 llCategories.addView(chip)
@@ -71,6 +77,7 @@ class PostsAdapter(
         }
     }
 
+    //object contains logic of comparison if current comment is new
     class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
         override fun areItemsTheSame(oldItem: Post, newItem: Post) = oldItem.id == newItem.id
         override fun areContentsTheSame(oldItem: Post, newItem: Post) = oldItem == newItem

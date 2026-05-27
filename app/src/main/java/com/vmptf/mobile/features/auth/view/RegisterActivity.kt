@@ -41,7 +41,8 @@ class RegisterActivity : AppCompatActivity() {
 
         // Toolbar with back navigation
         val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(toolbar) //toolbar is set to main ActionBar (upper line) of activity
+        //show in left corner '<-' go back
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = ""
 
@@ -65,6 +66,8 @@ class RegisterActivity : AppCompatActivity() {
             finish()    //закриваємо поточний register
         }
 
+        // activity subscribes on updating from viewModel
+        //when authState changes based on changes do something
         viewModel.authState.observe(this) { state ->
             when (state) {
                 is AuthState.Idle -> {
